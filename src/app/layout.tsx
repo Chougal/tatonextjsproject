@@ -13,8 +13,12 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "RiTech Tattoo Studio",
-  description: "RiTech Tattoo Studio - Business Management Dashboard",
+  title: "Ritesh Tattoo Studio",
+  description: "Ritesh Tattoo Studio - Business Management Dashboard",
+  icons: {
+    icon: "/ritech-icon.svg",
+    apple: "/ritech-icon.svg",
+  },
 };
 
 export default function RootLayout({
