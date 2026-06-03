@@ -32,7 +32,7 @@ export default function CustomersPage() {
     if (!/^\d{10}$/.test(mobile.trim())) { setError("Mobile must be exactly 10 digits."); return; }
 
     if (editingId) {
-      setCustomers(customers.map(c => c.id === editingId ? { ...c, name: name.trim(), mobile: mobile.trim(), address: address.trim() } : c));
+      setCustomers(prev => (prev as Customer[]).map(c => c.id === editingId ? { ...c, name: name.trim(), mobile: mobile.trim(), address: address.trim() } : c));
     } else {
       if (customers.some(c => c.mobile === mobile.trim())) { setError("Mobile number already registered!"); return; }
       const newCustomer: Customer = {
@@ -42,7 +42,7 @@ export default function CustomersPage() {
         address: address.trim(),
         registered: new Date().toISOString(),
       };
-      setCustomers([...customers, newCustomer]);
+      setCustomers(prev => [...(prev as Customer[]), newCustomer]);
     }
     resetForm();
   };
@@ -52,7 +52,7 @@ export default function CustomersPage() {
   };
 
   const deleteCustomer = (id: string) => {
-    if (confirm("Delete this customer?")) setCustomers(customers.filter(c => c.id !== id));
+    if (confirm("Delete this customer?")) setCustomers(prev => (prev as Customer[]).filter(c => c.id !== id));
   };
 
   const filtered = useMemo(() =>

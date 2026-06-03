@@ -50,7 +50,9 @@ export default function InvestmentPage() {
   };
 
   const deleteInvestment = (id: string) => {
-    if (confirm("Delete this investment entry?")) setInvestments(investments.filter(i => i.id !== id));
+    if (confirm("Delete this investment entry?")) {
+      setInvestments(prev => (prev as Investment[]).filter(i => i.id !== id));
+    }
   };
 
   const sorted = [...investments].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());

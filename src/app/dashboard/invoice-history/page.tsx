@@ -49,7 +49,7 @@ export default function InvoiceHistoryPage() {
   const totalFiltered = filtered.reduce((s, i) => s + (i.final || 0), 0);
 
   const deleteInvoice = (id: string) => {
-    if (confirm("Delete this invoice?")) setInvoices(invoices.filter(i => i.id !== id));
+    if (confirm("Delete this invoice?")) setInvoices(prev => (prev as Invoice[]).filter(i => i.id !== id));
   };
 
   if (!loaded) return <div className="flex h-full items-center justify-center">Loading...</div>;

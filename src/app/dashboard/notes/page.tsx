@@ -57,16 +57,16 @@ export default function NotesPage() {
       created_date: new Date().toISOString(),
       completed_date: null,
     };
-    setNotes([note, ...notes]);
+    setNotes(prev => [note, ...(prev as Note[])]);
     setTitle(""); setContent(""); setPriority("Medium"); setCategory(CATEGORIES[0]); setDueDate(""); setError("");
   };
 
   const completeNote = (id: string) => {
-    setNotes(notes.map(n => n.id === id ? { ...n, status: "Completed", completed_date: new Date().toISOString() } : n));
+    setNotes(prev => (prev as Note[]).map(n => n.id === id ? { ...n, status: "Completed" as const, completed_date: new Date().toISOString() } : n));
   };
 
   const deleteNote = (id: string) => {
-    if (confirm("Delete this note?")) setNotes(notes.filter(n => n.id !== id));
+    if (confirm("Delete this note?")) setNotes(prev => (prev as Note[]).filter(n => n.id !== id));
   };
 
   const filtered = useMemo(() => {

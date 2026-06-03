@@ -42,7 +42,7 @@ export default function ExpenseHistoryPage() {
   const totalFiltered = filtered.reduce((s, e) => s + e.amount, 0);
 
   const deleteExpense = (id: string) => {
-    if (confirm("Delete this expense?")) setExpenses(expenses.filter(e => e.id !== id));
+    if (confirm("Delete this expense?")) setExpenses(prev => (prev as Expense[]).filter(e => e.id !== id));
   };
 
   if (!loaded) return <div className="flex h-full items-center justify-center">Loading...</div>;
