@@ -169,7 +169,10 @@ export default function CustomersPage() {
                           <td className="px-4 py-3 text-white font-medium">{c.name}</td>
                           <td className="px-4 py-3 text-gray-300">{c.mobile}</td>
                           <td className="px-4 py-3 text-gray-400">{c.address || "—"}</td>
-                          <td className="px-4 py-3 text-gray-400">{new Date(c.registered).toLocaleDateString("en-IN")}</td>
+                          <td className="px-4 py-3 text-gray-400 text-xs whitespace-nowrap">
+                            <span className="block">{new Date(c.registered).toLocaleDateString("en-IN")}</span>
+                            <span className="block text-gray-500">{new Date(c.registered).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}</span>
+                          </td>
                           <td className="px-4 py-3">
                             <div className="flex gap-2">
                               <button onClick={() => editCustomer(c)} className="text-[var(--accent)] hover:opacity-80"><Edit2 size={16} /></button>
