@@ -72,10 +72,16 @@ export default function SettingsPage() {
 
   // Clear all data
   const handleClearAll = () => {
-    if (!confirm("⚠️ This will permanently delete ALL data (invoices, expenses, customers, notes). Are you sure?")) return;
+    if (!confirm("⚠️ This will permanently delete ALL data (invoices, expenses, customers, notes, investments). Are you sure?")) return;
     if (!confirm("Last chance — confirm permanent delete?")) return;
-    ["ritech_invoices", "ritech_expenses", "ritech_customers", "ritech_notes"].forEach(k => localStorage.removeItem(k));
-    alert("All data cleared. Please refresh the page.");
+    [
+      "ritech_invoices",
+      "ritech_expenses",
+      "ritech_customers",
+      "ritech_notes",
+      "ritech_investments"
+    ].forEach(k => localStorage.removeItem(k));
+    window.location.reload();
   };
 
   if (!loaded) return <div className="flex h-full items-center justify-center">Loading...</div>;
@@ -142,7 +148,7 @@ export default function SettingsPage() {
       {/* Danger Zone */}
       <div className="bg-[#2a1a1a] border border-red-900/50 rounded-2xl p-6 space-y-3">
         <h2 className="text-lg font-bold text-[var(--error)]">⚠️ Danger Zone</h2>
-        <p className="text-sm text-gray-400">This will permanently delete all invoices, expenses, customers, and notes. This action cannot be undone.</p>
+        <p className="text-sm text-gray-400">This will permanently delete all invoices, expenses, customers, notes and investments. This action cannot be undone.</p>
         <button onClick={handleClearAll}
           className="flex items-center gap-2 bg-[var(--error)] text-white font-bold py-2 px-5 rounded-xl hover:opacity-90">
           <Trash2 size={18} /> Clear All Data
