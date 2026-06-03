@@ -24,7 +24,7 @@ export default function CustomersPage() {
   const [error, setError] = useState("");
 
   const resetForm = () => {
-    setName(""); setMobile(""); setAddress(""); setEditingId(""); setError("");
+    setName(""); setMobile(""); setAddress(""); setEditingId(null); setError("");
   };
 
   const saveCustomer = () => {

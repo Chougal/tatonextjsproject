@@ -44,7 +44,7 @@ export default function InvestmentPage() {
       category,
       note: note.trim(),
     };
-    setInvestments([...investments, inv]);
+    setInvestments(prev => [...(prev as Investment[]), inv]);
     setDescription(""); setAmount(""); setNote(""); setDate(new Date().toISOString().split("T")[0]);
     setCategory(CATEGORIES[0]); setError("");
   };

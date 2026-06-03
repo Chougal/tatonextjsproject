@@ -44,7 +44,7 @@ export default function Dashboard() {
   const highPriorityNotes = pendingNotes.filter(n => n.priority === "High");
 
   const completeNote = (id: string | number) =>
-    setNotes(notes.map(n => n.id === id ? { ...n, status: "Completed", completed_date: new Date().toISOString() } : n));
+    setNotes(prev => (prev as any[]).map(n => n.id === id ? { ...n, status: "Completed", completed_date: new Date().toISOString() } : n));
 
   if (!invoicesLoaded || !expensesLoaded || !notesLoaded || !investLoaded) {
     return <div className="flex h-full items-center justify-center text-gray-400">Loading...</div>;

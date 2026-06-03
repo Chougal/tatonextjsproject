@@ -34,9 +34,16 @@ export default function SettingsPage() {
     setTimeout(() => setSaved(false), 2000);
   };
 
-  // Export all data as JSON
+  // Export all data as JSON — includes ALL keys
   const handleExport = () => {
-    const keys = ["ritech_invoices", "ritech_expenses", "ritech_customers", "ritech_notes", "ritech_settings"];
+    const keys = [
+      "ritech_invoices",
+      "ritech_expenses",
+      "ritech_customers",
+      "ritech_notes",
+      "ritech_investments",
+      "ritech_settings",
+    ];
     const data: Record<string, unknown> = {};
     keys.forEach(k => {
       try { data[k] = JSON.parse(localStorage.getItem(k) || "null"); } catch { data[k] = null; }
@@ -50,7 +57,7 @@ export default function SettingsPage() {
     URL.revokeObjectURL(url);
   };
 
-  // Import data from JSON
+  // Import data from JSON — auto-reload after import
   const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -61,7 +68,7 @@ export default function SettingsPage() {
         Object.entries(data).forEach(([key, value]) => {
           if (value !== null) localStorage.setItem(key, JSON.stringify(value));
         });
-        alert("Data imported successfully! Please refresh the page.");
+        window.location.reload();
       } catch {
         alert("Invalid backup file.");
       }

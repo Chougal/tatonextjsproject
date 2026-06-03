@@ -37,7 +37,7 @@ export default function ExpensesPage() {
       date,
       category,
     };
-    setExpenses([...expenses, newExp]);
+    setExpenses(prev => [...(prev as Expense[]), newExp]);
     setDescription(""); setAmount(""); setDate(new Date().toISOString().split("T")[0]); setCategory(CATEGORIES[0]); setError("");
   };
 

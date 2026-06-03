@@ -119,7 +119,7 @@ export default function InvoicePage() {
       date: new Date().toISOString(),
       notes: notes.trim(),
     };
-    setInvoices([...invoices, inv]);
+    setInvoices(prev => [...(prev as Invoice[]), inv]);
     setSaved(inv);
     resetForm();
   };
