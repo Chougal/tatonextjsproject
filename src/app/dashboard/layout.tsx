@@ -16,6 +16,7 @@ import {
   Menu,
   X,
   TrendingUp,
+  ShieldCheck,
 } from "lucide-react";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -25,7 +26,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   useEffect(() => {
     const auth = window.localStorage.getItem("ritech_auth");
-    if (!auth) router.push("/");
+    if (!auth) { router.push("/"); return; }
+    // Check expiry
+    const expiry = window.localStorage.getItem("ritech_expiry_date");
+    if (expiry && new Date() > new Date(expiry)) {
+      window.localStorage.removeItem("ritech_auth");
+      router.replace("/maintenance");
+    }
   }, [router]);
 
   // Close sidebar on route change (mobile)
@@ -44,6 +51,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     { name: "Investment",      href: "/dashboard/investment",     icon: TrendingUp },
     { name: "Notes & Tasks",   href: "/dashboard/notes",          icon: ClipboardList },
     { name: "Settings",        href: "/dashboard/settings",       icon: Settings },
+    { name: "Admin",           href: "/dashboard/admin",          icon: ShieldCheck },
   ];
 
   const handleLogout = () => {
@@ -87,17 +95,23 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <ul className="space-y-0.5 px-2">
             {navItems.map((item) => {
               const isActive = pathname === item.href;
+              const isAdmin = item.href === "/dashboard/admin";
               return (
                 <li key={item.name}>
                   <Link
                     href={item.href}
                     className={`flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all duration-150 text-sm
-                      ${isActive
-                        ? "bg-[var(--accent-muted)] text-[var(--accent)] font-semibold"
-                        : "text-gray-400 hover:bg-[#2a2a3b] hover:text-white"}`}
+                      ${isAdmin
+                        ? isActive
+                          ? "bg-purple-900/40 text-purple-300 font-semibold"
+                          : "text-purple-400 hover:bg-purple-900/20 hover:text-purple-300"
+                        : isActive
+                          ? "bg-[var(--accent-muted)] text-[var(--accent)] font-semibold"
+                          : "text-gray-400 hover:bg-[#2a2a3b] hover:text-white"}`}
                   >
                     <item.icon size={18} />
                     {item.name}
+                    {isAdmin && <span className="ml-auto text-[10px] bg-purple-900/50 text-purple-300 px-1.5 py-0.5 rounded-full">🔐</span>}
                   </Link>
                 </li>
               );

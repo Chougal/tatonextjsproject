@@ -1,19 +1,39 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Lock, Unlock } from "lucide-react";
+
+function isExpired(): boolean {
+  if (typeof window === "undefined") return false;
+  const expiry = localStorage.getItem("ritech_expiry_date");
+  if (!expiry) return false; // No expiry set = unlimited
+  return new Date() > new Date(expiry);
+}
 
 export default function LoginScreen() {
   const [pin, setPin] = useState("");
   const [error, setError] = useState(false);
   const router = useRouter();
 
+  // Check expiry on mount
+  useEffect(() => {
+    if (isExpired()) {
+      router.replace("/maintenance");
+    }
+  }, [router]);
+
   const handleLogin = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
+
+    // Double-check expiry at login time
+    if (isExpired()) {
+      router.replace("/maintenance");
+      return;
+    }
+
     if (pin === "8085") {
       setError(false);
-      // In a real app we'd set an auth token, but for this frontend-only app we just route.
       if (typeof window !== "undefined") {
         window.localStorage.setItem("ritech_auth", "true");
       }
@@ -27,13 +47,13 @@ export default function LoginScreen() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-[var(--background)] p-4">
       <div className="w-full max-w-md bg-[var(--panel)] border border-[var(--panel-border)] rounded-2xl shadow-2xl p-8 flex flex-col items-center">
-        {/* Profile / Logo Area */}
+        {/* Logo */}
         <div className="w-24 h-24 bg-[#0a0f2c] rounded-full flex items-center justify-center mb-6 shadow-lg border-2 border-[var(--accent-muted)]">
           <span className="text-4xl">🧿</span>
         </div>
 
         <h1 className="text-2xl font-bold text-white mb-2 text-center">
-          RiTech Tattoo Studio
+          Ritesh Tattoo Studio
         </h1>
         <p className="text-[var(--foreground)] opacity-80 mb-8 text-center">
           Welcome! Please Enter PIN
@@ -80,4 +100,3 @@ export default function LoginScreen() {
     </div>
   );
 }
-
