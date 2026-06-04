@@ -1,6 +1,7 @@
 @import "tailwindcss";
 
 :root {
+  /* Default Cyan Theme */
   --background: #1e1e2f;
   --foreground: #ededed;
   --panel: #2a2a3b;
@@ -10,6 +11,26 @@
   --error: #FF5555;
   --success: #00FF99;
   --warning: #FFAA00;
+}
+
+:root[data-theme="rose"] {
+  --accent: #f43f5e;
+  --accent-muted: rgba(244, 63, 94, 0.2);
+}
+
+:root[data-theme="emerald"] {
+  --accent: #10b981;
+  --accent-muted: rgba(16, 185, 129, 0.2);
+}
+
+:root[data-theme="amber"] {
+  --accent: #f59e0b;
+  --accent-muted: rgba(245, 158, 11, 0.2);
+}
+
+:root[data-theme="violet"] {
+  --accent: #8b5cf6;
+  --accent-muted: rgba(139, 92, 246, 0.2);
 }
 
 @theme inline {

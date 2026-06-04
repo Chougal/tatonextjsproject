@@ -274,6 +274,34 @@ export default function AdminPage() {
         </button>
       </div>
 
+      {/* ── Danger Zone ── */}
+      <div className="bg-[#2a1a1a] border border-red-900/60 rounded-2xl p-6 space-y-4">
+        <div>
+          <h2 className="text-base font-bold text-[var(--error)]">⚠️ Danger Zone</h2>
+          <p className="text-gray-400 text-sm mt-1">
+            हे सगळे invoices, expenses, customers, notes आणि investments <strong>कायमचे delete</strong> करेल.
+            हे action undo होत नाही.
+          </p>
+        </div>
+        <button
+          onClick={() => {
+            if (!confirm("⚠️ सगळा data permanently delete होईल.\nInvoices, Customers, Expenses, Notes, Investments — सगळं जाईल.\n\nSure आहात का?")) return;
+            if (!confirm("Last chance — खरंच delete करायचं आहे का?\nHe undo होणार नाही.")) return;
+            [
+              "ritech_invoices",
+              "ritech_expenses",
+              "ritech_customers",
+              "ritech_notes",
+              "ritech_investments",
+            ].forEach(k => localStorage.removeItem(k));
+            window.location.reload();
+          }}
+          className="flex items-center gap-2 bg-[var(--error)] hover:opacity-90 text-white font-bold py-2.5 px-6 rounded-xl transition-opacity"
+        >
+          🗑️ Clear All Data
+        </button>
+      </div>
+
     </div>
   );
 }

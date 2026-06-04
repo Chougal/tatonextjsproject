@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
-import { Save, Download, Upload, Trash2, Shield, Clock } from "lucide-react";
+import { Save, Download, Upload, Shield, Clock, Palette, Globe, Check } from "lucide-react";
 
 interface Settings {
   studio_name: string;
@@ -12,6 +12,8 @@ interface Settings {
   invoice_footer: string;
   default_discount: string;
   default_payment_mode: string;
+  theme: string;
+  language: string;
 }
 
 const DEFAULT_SETTINGS: Settings = {
@@ -22,6 +24,8 @@ const DEFAULT_SETTINGS: Settings = {
   invoice_footer: "Thank you for visiting!",
   default_discount: "0",
   default_payment_mode: "Cash",
+  theme: "cyan",
+  language: "en",
 };
 
 const ALL_KEYS = [
@@ -63,10 +67,28 @@ function currentMonthKey() {
 
 export default function SettingsPage() {
   const [settings, setSettings, loaded] = useLocalStorage<Settings>("ritech_settings", DEFAULT_SETTINGS);
+  const [draftSettings, setDraftSettings] = useState<Settings>(DEFAULT_SETTINGS);
   const [saved, setSaved] = useState(false);
   const [lastBackupMonth, setLastBackupMonth] = useLocalStorage<string>("ritech_last_backup_month", "");
   const [autoBackupEnabled, setAutoBackupEnabled] = useLocalStorage<boolean>("ritech_auto_backup", true);
   const [backupHistory, setBackupHistory] = useLocalStorage<string[]>("ritech_backup_history", []);
+
+  useEffect(() => {
+    if (loaded) setDraftSettings(settings);
+  }, [loaded, settings]);
+
+  const savedSettingsRef = useRef(settings);
+  useEffect(() => {
+    savedSettingsRef.current = settings;
+  }, [settings]);
+
+  // Revert preview theme/language if unmounted without saving
+  useEffect(() => {
+    return () => {
+      document.documentElement.setAttribute("data-theme", savedSettingsRef.current.theme || "cyan");
+      document.documentElement.lang = savedSettingsRef.current.language || "en";
+    };
+  }, []);
 
   // ── Auto Monthly Backup Logic ──
   useEffect(() => {
@@ -92,7 +114,12 @@ export default function SettingsPage() {
   }, [autoBackupEnabled]);
 
   const handleSave = () => {
-    setSettings(settings);
+    setSettings(draftSettings);
+    // Apply theme & language immediately
+    document.documentElement.setAttribute("data-theme", draftSettings.theme || "cyan");
+    document.documentElement.lang = draftSettings.language || "en";
+    // Fire custom event so ThemeProvider picks it up across components
+    window.dispatchEvent(new Event("ritech_settings_changed"));
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
   };
@@ -124,8 +151,7 @@ export default function SettingsPage() {
   };
 
   // Import data from JSON — auto-reload after import
-  const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+  const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {    const file = e.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
     reader.onload = (ev) => {
@@ -141,20 +167,6 @@ export default function SettingsPage() {
     };
     reader.readAsText(file);
     e.target.value = "";
-  };
-
-  // Clear all data
-  const handleClearAll = () => {
-    if (!confirm("⚠️ This will permanently delete ALL data (invoices, expenses, customers, notes, investments). Are you sure?")) return;
-    if (!confirm("Last chance — confirm permanent delete?")) return;
-    [
-      "ritech_invoices",
-      "ritech_expenses",
-      "ritech_customers",
-      "ritech_notes",
-      "ritech_investments",
-    ].forEach(k => localStorage.removeItem(k));
-    window.location.reload();
   };
 
   if (!loaded) return <div className="flex h-full items-center justify-center">Loading...</div>;
@@ -208,8 +220,8 @@ export default function SettingsPage() {
           <div key={key} className="space-y-1">
             <label className="text-sm text-gray-400">{label}</label>
             <input type={type} placeholder={placeholder}
-              value={(settings as unknown as Record<string, string>)[key] || ""}
-              onChange={e => setSettings({ ...settings, [key]: e.target.value })}
+              value={(draftSettings as unknown as Record<string, string>)[key] || ""}
+              onChange={e => setDraftSettings({ ...draftSettings, [key]: e.target.value })}
               className="w-full bg-[#1a1a2e] text-white border border-[var(--panel-border)] rounded-xl px-4 py-2 focus:outline-none focus:border-[var(--accent)]"
             />
           </div>
@@ -217,17 +229,91 @@ export default function SettingsPage() {
 
         <div className="space-y-1">
           <label className="text-sm text-gray-400">Default Payment Mode</label>
-          <select value={settings.default_payment_mode || "Cash"}
-            onChange={e => setSettings({ ...settings, default_payment_mode: e.target.value })}
+          <select value={draftSettings.default_payment_mode || "Cash"}
+            onChange={e => setDraftSettings({ ...draftSettings, default_payment_mode: e.target.value })}
             className="w-full bg-[#1a1a2e] text-white border border-[var(--panel-border)] rounded-xl px-4 py-2 focus:outline-none focus:border-[var(--accent)]">
             {["Cash", "UPI", "Card", "Online Transfer"].map(p => <option key={p} value={p}>{p}</option>)}
           </select>
         </div>
 
         <button onClick={handleSave}
-          className="flex items-center gap-2 bg-gradient-to-r from-[var(--accent)] to-[#00b3ff] text-black font-bold py-2 px-6 rounded-xl hover:opacity-90 transition-opacity">
+          className="flex items-center justify-center gap-2 bg-[var(--accent)] text-black font-bold py-3 px-6 rounded-xl hover:opacity-90 transition-opacity">
           <Save size={18} /> {saved ? "✅ Saved!" : "Save Settings"}
         </button>
+      </div>
+
+      {/* Theme Settings */}
+      <div className="bg-[var(--panel)] border border-[var(--panel-border)] rounded-2xl p-6 space-y-4">
+        <h2 className="text-lg font-bold text-white flex items-center gap-2">
+          <Palette size={20} className="text-[var(--accent)]" /> Theme Customization
+        </h2>
+        <p className="text-sm text-gray-400">
+          Select a color theme for the application. Changes will apply immediately.
+        </p>
+
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+          {[
+            { id: "cyan", name: "Cyan", color: "#00FFE1" },
+            { id: "emerald", name: "Emerald", color: "#10b981" },
+            { id: "rose", name: "Rose", color: "#f43f5e" },
+            { id: "amber", name: "Amber", color: "#f59e0b" },
+            { id: "violet", name: "Violet", color: "#8b5cf6" },
+          ].map((t) => (
+            <button
+              key={t.id}
+              onClick={() => {
+                const newTheme = t.id;
+                setDraftSettings({ ...draftSettings, theme: newTheme });
+                document.documentElement.setAttribute("data-theme", newTheme);
+              }}
+              className={`flex flex-col items-center gap-2 p-3 rounded-xl border transition-all ${
+                (draftSettings.theme || "cyan") === t.id
+                  ? "border-[var(--accent)] bg-[var(--accent-muted)]"
+                  : "border-[var(--panel-border)] bg-[#1a1a2e] hover:border-gray-500"
+              }`}
+            >
+              <div className="w-8 h-8 rounded-full shadow-lg" style={{ backgroundColor: t.color }}></div>
+              <span className="text-xs font-semibold text-white">{t.name}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Language Settings */}
+      <div className="bg-[var(--panel)] border border-[var(--panel-border)] rounded-2xl p-6 space-y-4">
+        <h2 className="text-lg font-bold text-white flex items-center gap-2">
+          <Globe size={20} className="text-[var(--accent)]" /> Language Setting
+        </h2>
+        <p className="text-sm text-gray-400">
+          Select your preferred language.
+        </p>
+
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+          {[
+            { id: "en", name: "English" },
+            { id: "mr", name: "मराठी" },
+            { id: "hi", name: "हिन्दी" },
+          ].map((lang) => (
+            <button
+              key={lang.id}
+              onClick={() => {
+                const newLang = lang.id;
+                setDraftSettings({ ...draftSettings, language: newLang });
+                document.documentElement.lang = newLang;
+              }}
+              className={`px-3 py-3 rounded-xl text-sm font-medium transition-all border ${
+                (draftSettings.language || "en") === lang.id
+                  ? "bg-[var(--accent-muted)] border-[var(--accent)] text-[var(--accent)]"
+                  : "bg-[#1a1a2e] border-[var(--panel-border)] text-gray-400 hover:border-gray-500"
+              }`}
+            >
+              <div className="flex flex-col items-center gap-2">
+                {(draftSettings.language || "en") === lang.id && <Check size={16} />}
+                {lang.name}
+              </div>
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Auto Backup Settings */}
@@ -290,16 +376,11 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      {/* Danger Zone */}
-      <div className="bg-[#2a1a1a] border border-red-900/50 rounded-2xl p-6 space-y-3">
-        <h2 className="text-lg font-bold text-[var(--error)]">⚠️ Danger Zone</h2>
-        <p className="text-sm text-gray-400">
-          This will permanently delete all invoices, expenses, customers, notes and investments. This action cannot be undone.
+      {/* Danger Zone moved to Admin Panel (Settings > Admin) */}
+      <div className="bg-[#1a1a2e] border border-[var(--panel-border)] rounded-2xl p-5">
+        <p className="text-gray-500 text-sm text-center">
+          🔐 Data delete करायचं असेल तर <strong className="text-[var(--accent)]">Admin Panel</strong> वापरा
         </p>
-        <button onClick={handleClearAll}
-          className="flex items-center gap-2 bg-[var(--error)] text-white font-bold py-2 px-5 rounded-xl hover:opacity-90">
-          <Trash2 size={18} /> Clear All Data
-        </button>
       </div>
     </div>
   );
